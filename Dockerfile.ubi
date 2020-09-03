@@ -12,7 +12,9 @@ COPY . $DISTRIBUTION_DIR
 RUN CGO_ENABLED=0 make PREFIX=/go clean binaries && file ./bin/registry | grep "statically linked"
 
 FROM registry.access.redhat.com/ubi8-minimal
-RUN microdnf -y install  ca-certificates httpd-tools
+RUN echo -ne "[centos-8-baseos]\nname = CentOS 8 (RPMs) - BaseOS\nbaseurl = http://mirror.centos.org/centos-8/8/BaseOS/x86_64/os/\nenabled = 1\ngpgcheck = 0" > /etc/yum.repos.d/centos-baseos.repo
+RUN echo -ne "[centos-8-appstream]\nname = CentOS 8 (RPMs) - AppStream\nbaseurl = http://mirror.centos.org/centos-8/8/AppStream/x86_64/os/\nenabled = 1\ngpgcheck = 0" > /etc/yum.repos.d/centos-appstream.repo
+RUN microdnf -y install  ca-certificates httpd-tools podman
 COPY cmd/registry/config-dev.yml /etc/docker/registry/config.yml
 COPY --from=builder /go/src/github.com/docker/distribution/bin/registry /bin/registry
 VOLUME ["/var/lib/registry"]
